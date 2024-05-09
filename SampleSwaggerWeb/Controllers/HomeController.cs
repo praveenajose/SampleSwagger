@@ -17,12 +17,11 @@ namespace SampleSwaggerWeb.Controllers
         public IActionResult Index()
         {
             var client = new HttpClient();
-            var swaggerApiClient = new SwaggerAPIClient("https://localhost:7150/", client);
+            var swaggerApiClient = new SwaggerAPIClient("https://localhost:7293/", client);
 
             var loginViewModel = new LoginRequest { Username = "admin", Password = "admin" };
-            swaggerApiClient.LoginAsync(loginViewModel);
-            //var loggedInUser = swaggerApiClient.LoginAsync(loginViewModel);
-            //var token = "Bearer " + loggedInUser.Token;
+            var loggedInUser = swaggerApiClient.LoginAsync(loginViewModel).Result;
+            var token = "Bearer " + loggedInUser.Token;
 
             return View();
         }

@@ -1,6 +1,9 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Tokens;
+using SampleSwaggerApi.ViewModels;
 using System.IdentityModel.Tokens.Jwt;
+using System.Net;
 using System.Security.Claims;
 using System.Text;
 
@@ -14,18 +17,39 @@ namespace SampleSwagger.Controllers
     public class LoginController : ControllerBase
     {
         [HttpPost]
-        public IActionResult Login([FromBody] LoginRequest request)
+        [ProducesResponseType(typeof(LoggedInUserViewModel), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
+        public async Task<IActionResult> LoginAsync([FromBody] LoginRequest request)
         {
-            // Perform authentication logic here
-            if (IsValidUser(request.Username, request.Password))
+            if (request == null)
             {
-                // Simulate generating a token (replace with your actual authentication logic)
-                var token = GenerateJwtToken(request.Username);
-
-                return Ok(new { token });
+                // Return 400 bad request.
+                return this.Problem(statusCode: (int)HttpStatusCode.BadRequest, title: "Login details not provided");
             }
 
-            return Unauthorized();
+            // Perform authentication logic here
+            var validUser = await IsValidUserAsync(request.Username, request.Password);
+
+            if(!validUser)
+            {
+                // Return 400 bad request.
+                return this.Problem(statusCode: 400, title: "Invalid email address or password");
+            }
+
+            // Simulate generating a token (replace with your actual authentication logic)
+            var token = GenerateJwtToken(request.Username);
+
+            return Ok(new LoggedInUserViewModel { Token = token });
+        }
+
+        // Assuming IsValidUser method is made asynchronous as well
+        private async Task<bool> IsValidUserAsync(string username, string password)
+        {
+            // Your asynchronous validation logic goes here
+            // For example, if you're making an asynchronous database call to validate the user
+            // You would await that call here and return true/false based on the result
+            // For demonstration purposes, let's assume it's an asynchronous method returning a boolean
+            return await Task.FromResult(IsValidUser(username, password));
         }
 
         private bool IsValidUser(string username, string password)
