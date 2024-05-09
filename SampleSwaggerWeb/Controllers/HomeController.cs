@@ -11,7 +11,7 @@ namespace SampleSwaggerWeb.Controllers
 
         public HomeController(ILogger<HomeController> logger)
         {
-            _logger = logger;
+            this._logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
         public IActionResult Index()
@@ -22,6 +22,11 @@ namespace SampleSwaggerWeb.Controllers
             var loginViewModel = new LoginRequest { Username = "admin", Password = "admin" };
             var loggedInUser = swaggerApiClient.LoginAsync(loginViewModel).Result;
             var token = "Bearer " + loggedInUser.Token;
+
+            _logger.LogInformation($"Token Received: {token}");
+            _logger.LogDebug($"**Token Received: {token}");
+            _logger.LogError($"***Token Received: {token}");
+            _logger.LogWarning($"****Token Received: {token}");
 
             return View();
         }
